@@ -250,6 +250,15 @@ namespace GameSparks { namespace Util {
 					mbedtls_ssl_conf_authmode(&conf, MBEDTLS_SSL_VERIFY_REQUIRED);
 				#endif
 
+				static struct CertDone
+				{
+					~CertDone()
+					{
+						mbedtls_x509_crt_free(&cacert);
+						mbedtls_x509_crl_free(&crl);
+					}
+				} cert_done;
+
 				return 0;
 			}
 	};
