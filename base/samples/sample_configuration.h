@@ -18,8 +18,8 @@ namespace SampleConfiguration
 		NativePlatformDescription()
 		:IGSPlatform
 		(
-			"<GameSparks Api Key>", // insert your auth key
-			"<GameSparks Api Secret>", // insert your secret
+			"D392398b0Yuo", // insert your auth key
+			"CnRKN86hWS4iK9zNRBZ47lKfYpRsjuXg", // insert your secret
 			true, // use the preview server?
 			true // do you want verbose debugging?
 		)
