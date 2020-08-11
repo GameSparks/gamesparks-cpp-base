@@ -98,7 +98,6 @@ namespace GameSparks
 				cJSON* createFromNative(double value) { return cJSON_CreateNumber(value); }
 				cJSON* createFromNative(const GSData& value) { return cJSON_Duplicate(value.GetBaseData(), 1); }
 				cJSON* createFromNative(const gsstl::vector<int>& value) { return cJSON_CreateIntArray(&value[0], static_cast<int>(value.size())); }
-				cJSON* createFromNative(const gsstl::vector<long long>& value) { return cJSON_CreateLongLongArray(&value[0], static_cast<int>(value.size())); }
 				cJSON* createFromNative(const gsstl::vector<float>& value) { return cJSON_CreateFloatArray(&value[0], static_cast<int>(value.size())); }
 				cJSON* createFromNative(const gsstl::vector<double>& value) { return cJSON_CreateDoubleArray(&value[0], static_cast<int>(value.size())); }
 
