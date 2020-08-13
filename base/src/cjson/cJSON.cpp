@@ -58,15 +58,15 @@
 
 
 /* define our own boolean type */
-// #ifdef true
-// #undef true
-// #endif
-// #define true ((cJSON_bool)1)
+#ifdef true
+#undef true
+#endif
+#define true ((cJSON_bool)1)
 
-// #ifdef false
-// #undef false
-// #endif
-// #define false ((cJSON_bool)0)
+#ifdef false
+#undef false
+#endif
+#define false ((cJSON_bool)0)
 
 
 namespace GameSparks
@@ -286,7 +286,7 @@ namespace GameSparks
         
         if ((input_buffer == NULL) || (input_buffer->content == NULL))
         {
-            return ((cJSON_bool)0);
+            return false;
         }
         
         /* copy the number into a temporary buffer and replace '.' with the decimal point
@@ -327,7 +327,7 @@ namespace GameSparks
         number = strtod((const char*)number_c_string, (char**)&after_end);
         if (number_c_string == after_end)
         {
-            return ((cJSON_bool)0); /* parse_error */
+            return false; /* parse_error */
         }
         
         item->valuedouble = number;
@@ -349,7 +349,7 @@ namespace GameSparks
         item->type = cJSON_Number;
         
         input_buffer->offset += (size_t)(after_end - number_c_string);
-        return ((cJSON_bool)1);
+        return true;
     }
     
     /* don't ask me, but the original cJSON_SetNumberValue returns an integer or double */
@@ -496,7 +496,7 @@ namespace GameSparks
         
         if (output_buffer == NULL)
         {
-            return ((cJSON_bool)0);
+            return false;
         }
         
         /* This checks for NaN and Infinity */
@@ -520,14 +520,14 @@ namespace GameSparks
         /* sprintf failed or buffer overrun occured */
         if ((length < 0) || (length > (int)(sizeof(number_buffer) - 1)))
         {
-            return ((cJSON_bool)0);
+            return false;
         }
         
         /* reserve appropriate space in the output */
         output_pointer = ensure(output_buffer, (size_t)length + sizeof(""));
         if (output_pointer == NULL)
         {
-            return ((cJSON_bool)0);
+            return false;
         }
         
         /* copy the printed number to the output and replace locale
@@ -546,7 +546,7 @@ namespace GameSparks
         
         output_buffer->offset += (size_t)length;
         
-        return ((cJSON_bool)1);
+        return true;
     }
     
     /* parse 4 digit hexadecimal number */
@@ -820,7 +820,7 @@ namespace GameSparks
         input_buffer->offset = (size_t) (input_end - input_buffer->content);
         input_buffer->offset++;
         
-        return ((cJSON_bool)1);
+        return true;
         
     fail:
         if (output != NULL)
@@ -833,7 +833,7 @@ namespace GameSparks
             input_buffer->offset = (size_t)(input_pointer - input_buffer->content);
         }
         
-        return ((cJSON_bool)0);
+        return false;
     }
     
     /* Render the cstring provided to an escaped version that can be printed. */
@@ -848,7 +848,7 @@ namespace GameSparks
         
         if (output_buffer == NULL)
         {
-            return ((cJSON_bool)0);
+            return false;
         }
         
         /* empty string */
@@ -857,11 +857,11 @@ namespace GameSparks
             output = ensure(output_buffer, sizeof("\"\""));
             if (output == NULL)
             {
-                return ((cJSON_bool)0);
+                return false;
             }
             strcpy((char*)output, "\"\"");
             
-            return ((cJSON_bool)1);
+            return true;
         }
         
         /* set "flag" to 1 if something needs to be escaped */
@@ -893,7 +893,7 @@ namespace GameSparks
         output = ensure(output_buffer, output_length + sizeof("\"\""));
         if (output == NULL)
         {
-            return ((cJSON_bool)0);
+            return false;
         }
         
         /* no characters have to be escaped */
@@ -904,7 +904,7 @@ namespace GameSparks
             output[output_length + 1] = '\"';
             output[output_length + 2] = '\0';
             
-            return ((cJSON_bool)1);
+            return true;
         }
         
         output[0] = '\"';
@@ -955,7 +955,7 @@ namespace GameSparks
         output[output_length + 1] = '\"';
         output[output_length + 2] = '\0';
         
-        return ((cJSON_bool)1);
+        return true;
     }
     
     /* Invoke print_string_ptr (which is useful) on an item. */
@@ -1164,12 +1164,12 @@ namespace GameSparks
     /* Render a cJSON item/entity/structure to text. */
     CJSON_PUBLIC(char *) cJSON_Print(const cJSON *item)
     {
-        return (char*)print(item, ((cJSON_bool)1), &global_hooks);
+        return (char*)print(item, true, &global_hooks);
     }
     
     CJSON_PUBLIC(char *) cJSON_PrintUnformatted(const cJSON *item)
     {
-        return (char*)print(item, ((cJSON_bool)0), &global_hooks);
+        return (char*)print(item, false, &global_hooks);
     }
     
     CJSON_PUBLIC(char *) cJSON_PrintBuffered(const cJSON *item, int prebuffer, cJSON_bool fmt)
@@ -1189,7 +1189,7 @@ namespace GameSparks
         
         p.length = (size_t)prebuffer;
         p.offset = 0;
-        p.noalloc = ((cJSON_bool)0);
+        p.noalloc = false;
         p.format = fmt;
         p.hooks = global_hooks;
         
@@ -1208,13 +1208,13 @@ namespace GameSparks
         
         if ((len < 0) || (buf == NULL))
         {
-            return ((cJSON_bool)0);
+            return false;
         }
         
         p.buffer = (unsigned char*)buf;
         p.length = (size_t)len;
         p.offset = 0;
-        p.noalloc = ((cJSON_bool)1);
+        p.noalloc = true;
         p.format = fmt;
         p.hooks = global_hooks;
         
@@ -1226,7 +1226,7 @@ namespace GameSparks
     {
         if ((input_buffer == NULL) || (input_buffer->content == NULL))
         {
-            return ((cJSON_bool)0); /* no input */
+            return false; /* no input */
         }
         
         /* parse the different types of values */
@@ -1235,14 +1235,14 @@ namespace GameSparks
         {
             item->type = cJSON_NULL;
             input_buffer->offset += 4;
-            return ((cJSON_bool)1);
+            return true;
         }
         /* false */
         if (can_read(input_buffer, 5) && (strncmp((const char*)buffer_at_offset(input_buffer), "false", 5) == 0))
         {
             item->type = cJSON_False;
             input_buffer->offset += 5;
-            return ((cJSON_bool)1);
+            return true;
         }
         /* true */
         if (can_read(input_buffer, 4) && (strncmp((const char*)buffer_at_offset(input_buffer), "true", 4) == 0))
@@ -1250,7 +1250,7 @@ namespace GameSparks
             item->type = cJSON_True;
             item->valueint = 1;
             input_buffer->offset += 4;
-            return ((cJSON_bool)1);
+            return true;
         }
         /* string */
         if (can_access_at_index(input_buffer, 0) && (buffer_at_offset(input_buffer)[0] == '\"'))
@@ -1273,7 +1273,7 @@ namespace GameSparks
             return parse_object(item, input_buffer);
         }
         
-        return ((cJSON_bool)0);
+        return false;
     }
     
     /* Render a value to text. */
@@ -1283,7 +1283,7 @@ namespace GameSparks
         
         if ((item == NULL) || (output_buffer == NULL))
         {
-            return ((cJSON_bool)0);
+            return false;
         }
         
         switch ((item->type) & 0xFF)
@@ -1292,28 +1292,28 @@ namespace GameSparks
                 output = ensure(output_buffer, 5);
                 if (output == NULL)
                 {
-                    return ((cJSON_bool)0);
+                    return false;
                 }
                 strcpy((char*)output, "null");
-                return ((cJSON_bool)1);
+                return true;
                 
             case cJSON_False:
                 output = ensure(output_buffer, 6);
                 if (output == NULL)
                 {
-                    return ((cJSON_bool)0);
+                    return false;
                 }
                 strcpy((char*)output, "false");
-                return ((cJSON_bool)1);
+                return true;
                 
             case cJSON_True:
                 output = ensure(output_buffer, 5);
                 if (output == NULL)
                 {
-                    return ((cJSON_bool)0);
+                    return false;
                 }
                 strcpy((char*)output, "true");
-                return ((cJSON_bool)1);
+                return true;
                 
             case cJSON_Number:
                 return print_number(item, output_buffer);
@@ -1323,17 +1323,17 @@ namespace GameSparks
                 size_t raw_length = 0;
                 if (item->valuestring == NULL)
                 {
-                    return ((cJSON_bool)0);
+                    return false;
                 }
                 
                 raw_length = strlen(item->valuestring) + sizeof("");
                 output = ensure(output_buffer, raw_length);
                 if (output == NULL)
                 {
-                    return ((cJSON_bool)0);
+                    return false;
                 }
                 memcpy(output, item->valuestring, raw_length);
-                return ((cJSON_bool)1);
+                return true;
             }
                 
             case cJSON_String:
@@ -1346,7 +1346,7 @@ namespace GameSparks
                 return print_object(item, output_buffer);
                 
             default:
-                return ((cJSON_bool)0);
+                return false;
         }
     }
     
@@ -1358,7 +1358,7 @@ namespace GameSparks
         
         if (input_buffer->depth >= CJSON_NESTING_LIMIT)
         {
-            return ((cJSON_bool)0); /* to deeply nested */
+            return false; /* to deeply nested */
         }
         input_buffer->depth++;
         
@@ -1433,7 +1433,7 @@ namespace GameSparks
         
         input_buffer->offset++;
         
-        return ((cJSON_bool)1);
+        return true;
         
     fail:
         if (head != NULL)
@@ -1441,7 +1441,7 @@ namespace GameSparks
             cJSON_Delete(head);
         }
         
-        return ((cJSON_bool)0);
+        return false;
     }
     
     /* Render an array to text */
@@ -1453,7 +1453,7 @@ namespace GameSparks
         
         if (output_buffer == NULL)
         {
-            return ((cJSON_bool)0);
+            return false;
         }
         
         /* Compose the output array. */
@@ -1461,7 +1461,7 @@ namespace GameSparks
         output_pointer = ensure(output_buffer, 1);
         if (output_pointer == NULL)
         {
-            return ((cJSON_bool)0);
+            return false;
         }
         
         *output_pointer = '[';
@@ -1472,7 +1472,7 @@ namespace GameSparks
         {
             if (!print_value(current_element, output_buffer))
             {
-                return ((cJSON_bool)0);
+                return false;
             }
             update_offset(output_buffer);
             if (current_element->next)
@@ -1481,7 +1481,7 @@ namespace GameSparks
                 output_pointer = ensure(output_buffer, length + 1);
                 if (output_pointer == NULL)
                 {
-                    return ((cJSON_bool)0);
+                    return false;
                 }
                 *output_pointer++ = ',';
                 if(output_buffer->format)
@@ -1497,13 +1497,13 @@ namespace GameSparks
         output_pointer = ensure(output_buffer, 2);
         if (output_pointer == NULL)
         {
-            return ((cJSON_bool)0);
+            return false;
         }
         *output_pointer++ = ']';
         *output_pointer = '\0';
         output_buffer->depth--;
         
-        return ((cJSON_bool)1);
+        return true;
     }
     
     /* Build an object from the text. */
@@ -1514,7 +1514,7 @@ namespace GameSparks
         
         if (input_buffer->depth >= CJSON_NESTING_LIMIT)
         {
-            return ((cJSON_bool)0); /* to deeply nested */
+            return false; /* to deeply nested */
         }
         input_buffer->depth++;
         
@@ -1604,7 +1604,7 @@ namespace GameSparks
         item->child = head;
         
         input_buffer->offset++;
-        return ((cJSON_bool)1);
+        return true;
         
     fail:
         if (head != NULL)
@@ -1612,7 +1612,7 @@ namespace GameSparks
             cJSON_Delete(head);
         }
         
-        return ((cJSON_bool)0);
+        return false;
     }
     
     /* Render an object to text. */
@@ -1624,7 +1624,7 @@ namespace GameSparks
         
         if (output_buffer == NULL)
         {
-            return ((cJSON_bool)0);
+            return false;
         }
         
         /* Compose the output: */
@@ -1632,7 +1632,7 @@ namespace GameSparks
         output_pointer = ensure(output_buffer, length + 1);
         if (output_pointer == NULL)
         {
-            return ((cJSON_bool)0);
+            return false;
         }
         
         *output_pointer++ = '{';
@@ -1651,7 +1651,7 @@ namespace GameSparks
                 output_pointer = ensure(output_buffer, output_buffer->depth);
                 if (output_pointer == NULL)
                 {
-                    return ((cJSON_bool)0);
+                    return false;
                 }
                 for (i = 0; i < output_buffer->depth; i++)
                 {
@@ -1663,7 +1663,7 @@ namespace GameSparks
             /* print key */
             if (!print_string_ptr((unsigned char*)current_item->string, output_buffer))
             {
-                return ((cJSON_bool)0);
+                return false;
             }
             update_offset(output_buffer);
             
@@ -1671,7 +1671,7 @@ namespace GameSparks
             output_pointer = ensure(output_buffer, length);
             if (output_pointer == NULL)
             {
-                return ((cJSON_bool)0);
+                return false;
             }
             *output_pointer++ = ':';
             if (output_buffer->format)
@@ -1683,7 +1683,7 @@ namespace GameSparks
             /* print value */
             if (!print_value(current_item, output_buffer))
             {
-                return ((cJSON_bool)0);
+                return false;
             }
             update_offset(output_buffer);
             
@@ -1692,7 +1692,7 @@ namespace GameSparks
             output_pointer = ensure(output_buffer, length + 1);
             if (output_pointer == NULL)
             {
-                return ((cJSON_bool)0);
+                return false;
             }
             if (current_item->next)
             {
@@ -1712,7 +1712,7 @@ namespace GameSparks
         output_pointer = ensure(output_buffer, output_buffer->format ? (output_buffer->depth + 1) : 2);
         if (output_pointer == NULL)
         {
-            return ((cJSON_bool)0);
+            return false;
         }
         if (output_buffer->format)
         {
@@ -1726,7 +1726,7 @@ namespace GameSparks
         *output_pointer = '\0';
         output_buffer->depth--;
         
-        return ((cJSON_bool)1);
+        return true;
     }
     
     /* Get Array size/item / object item. */
@@ -1816,12 +1816,12 @@ namespace GameSparks
     
     CJSON_PUBLIC(cJSON *) cJSON_GetObjectItem(const cJSON * const object, const char * const string)
     {
-        return get_object_item(object, string, ((cJSON_bool)0));
+        return get_object_item(object, string, false);
     }
     
     CJSON_PUBLIC(cJSON *) cJSON_GetObjectItemCaseSensitive(const cJSON * const object, const char * const string)
     {
-        return get_object_item(object, string, ((cJSON_bool)1));
+        return get_object_item(object, string, true);
     }
     
     CJSON_PUBLIC(cJSON_bool) cJSON_HasObjectItem(const cJSON *object, const char *string)
@@ -1864,7 +1864,7 @@ namespace GameSparks
         
         if ((item == NULL) || (array == NULL))
         {
-            return ((cJSON_bool)0);
+            return false;
         }
         
         child = array->child;
@@ -1884,7 +1884,7 @@ namespace GameSparks
             suffix_object(child, item);
         }
         
-        return ((cJSON_bool)1);
+        return true;
     }
     
     /* Add item to array/object. */
@@ -1916,7 +1916,7 @@ namespace GameSparks
         
         if ((object == NULL) || (string == NULL) || (item == NULL))
         {
-            return ((cJSON_bool)0);
+            return false;
         }
         
         if (constant_key)
@@ -1929,7 +1929,7 @@ namespace GameSparks
             new_key = (char*)cJSON_strdup((const unsigned char*)string, hooks);
             if (new_key == NULL)
             {
-                return ((cJSON_bool)0);
+                return false;
             }
             
             new_type = item->type & ~cJSON_StringIsConst;
@@ -1948,13 +1948,13 @@ namespace GameSparks
     
     CJSON_PUBLIC(void) cJSON_AddItemToObject(cJSON *object, const char *string, cJSON *item)
     {
-        add_item_to_object(object, string, item, &global_hooks, ((cJSON_bool)0));
+        add_item_to_object(object, string, item, &global_hooks, false);
     }
     
     /* Add an item to an object with constant string as key */
     CJSON_PUBLIC(void) cJSON_AddItemToObjectCS(cJSON *object, const char *string, cJSON *item)
     {
-        add_item_to_object(object, string, item, &global_hooks, ((cJSON_bool)1));
+        add_item_to_object(object, string, item, &global_hooks, true);
     }
     
     CJSON_PUBLIC(void) cJSON_AddItemReferenceToArray(cJSON *array, cJSON *item)
@@ -1974,13 +1974,13 @@ namespace GameSparks
             return;
         }
         
-        add_item_to_object(object, string, create_reference(item, &global_hooks), &global_hooks, ((cJSON_bool)0));
+        add_item_to_object(object, string, create_reference(item, &global_hooks), &global_hooks, false);
     }
     
     CJSON_PUBLIC(cJSON*) cJSON_AddNullToObject(cJSON * const object, const char * const name)
     {
         cJSON *null = cJSON_CreateNull();
-        if (add_item_to_object(object, name, null, &global_hooks, ((cJSON_bool)0)))
+        if (add_item_to_object(object, name, null, &global_hooks, false))
         {
             return null;
         }
@@ -1992,7 +1992,7 @@ namespace GameSparks
     CJSON_PUBLIC(cJSON*) cJSON_AddTrueToObject(cJSON * const object, const char * const name)
     {
         cJSON *true_item = cJSON_CreateTrue();
-        if (add_item_to_object(object, name, true_item, &global_hooks, ((cJSON_bool)0)))
+        if (add_item_to_object(object, name, true_item, &global_hooks, false))
         {
             return true_item;
         }
@@ -2004,7 +2004,7 @@ namespace GameSparks
     CJSON_PUBLIC(cJSON*) cJSON_AddFalseToObject(cJSON * const object, const char * const name)
     {
         cJSON *false_item = cJSON_CreateFalse();
-        if (add_item_to_object(object, name, false_item, &global_hooks, ((cJSON_bool)0)))
+        if (add_item_to_object(object, name, false_item, &global_hooks, false))
         {
             return false_item;
         }
@@ -2016,7 +2016,7 @@ namespace GameSparks
     CJSON_PUBLIC(cJSON*) cJSON_AddBoolToObject(cJSON * const object, const char * const name, const cJSON_bool boolean)
     {
         cJSON *bool_item = cJSON_CreateBool(boolean);
-        if (add_item_to_object(object, name, bool_item, &global_hooks, ((cJSON_bool)0)))
+        if (add_item_to_object(object, name, bool_item, &global_hooks, false))
         {
             return bool_item;
         }
@@ -2028,7 +2028,7 @@ namespace GameSparks
     CJSON_PUBLIC(cJSON*) cJSON_AddNumberToObject(cJSON * const object, const char * const name, const double number)
     {
         cJSON *number_item = cJSON_CreateNumber(number);
-        if (add_item_to_object(object, name, number_item, &global_hooks, ((cJSON_bool)0)))
+        if (add_item_to_object(object, name, number_item, &global_hooks, false))
         {
             return number_item;
         }
@@ -2040,7 +2040,7 @@ namespace GameSparks
     CJSON_PUBLIC(cJSON*) cJSON_AddStringToObject(cJSON * const object, const char * const name, const char * const string)
     {
         cJSON *string_item = cJSON_CreateString(string);
-        if (add_item_to_object(object, name, string_item, &global_hooks, ((cJSON_bool)0)))
+        if (add_item_to_object(object, name, string_item, &global_hooks, false))
         {
             return string_item;
         }
@@ -2052,7 +2052,7 @@ namespace GameSparks
     CJSON_PUBLIC(cJSON*) cJSON_AddRawToObject(cJSON * const object, const char * const name, const char * const raw)
     {
         cJSON *raw_item = cJSON_CreateRaw(raw);
-        if (add_item_to_object(object, name, raw_item, &global_hooks, ((cJSON_bool)0)))
+        if (add_item_to_object(object, name, raw_item, &global_hooks, false))
         {
             return raw_item;
         }
@@ -2064,7 +2064,7 @@ namespace GameSparks
     CJSON_PUBLIC(cJSON*) cJSON_AddObjectToObject(cJSON * const object, const char * const name)
     {
         cJSON *object_item = cJSON_CreateObject();
-        if (add_item_to_object(object, name, object_item, &global_hooks, ((cJSON_bool)0)))
+        if (add_item_to_object(object, name, object_item, &global_hooks, false))
         {
             return object_item;
         }
@@ -2076,7 +2076,7 @@ namespace GameSparks
     CJSON_PUBLIC(cJSON*) cJSON_AddArrayToObject(cJSON * const object, const char * const name)
     {
         cJSON *array = cJSON_CreateArray();
-        if (add_item_to_object(object, name, array, &global_hooks, ((cJSON_bool)0)))
+        if (add_item_to_object(object, name, array, &global_hooks, false))
         {
             return array;
         }
@@ -2188,12 +2188,12 @@ namespace GameSparks
     {
         if ((parent == NULL) || (replacement == NULL) || (item == NULL))
         {
-            return ((cJSON_bool)0);
+            return false;
         }
         
         if (replacement == item)
         {
-            return ((cJSON_bool)1);
+            return true;
         }
         
         replacement->next = item->next;
@@ -2216,7 +2216,7 @@ namespace GameSparks
         item->prev = NULL;
         cJSON_Delete(item);
         
-        return ((cJSON_bool)1);
+        return true;
     }
     
     CJSON_PUBLIC(void) cJSON_ReplaceItemInArray(cJSON *array, int which, cJSON *newitem)
@@ -2233,7 +2233,7 @@ namespace GameSparks
     {
         if ((replacement == NULL) || (string == NULL))
         {
-            return ((cJSON_bool)0);
+            return false;
         }
         
         /* replace the name in the replacement */
@@ -2246,17 +2246,17 @@ namespace GameSparks
         
         cJSON_ReplaceItemViaPointer(object, get_object_item(object, string, case_sensitive), replacement);
         
-        return ((cJSON_bool)1);
+        return true;
     }
     
     CJSON_PUBLIC(void) cJSON_ReplaceItemInObject(cJSON *object, const char *string, cJSON *newitem)
     {
-        replace_item_in_object(object, string, newitem, ((cJSON_bool)0));
+        replace_item_in_object(object, string, newitem, false);
     }
     
     CJSON_PUBLIC(void) cJSON_ReplaceItemInObjectCaseSensitive(cJSON *object, const char *string, cJSON *newitem)
     {
-        replace_item_in_object(object, string, newitem, ((cJSON_bool)1));
+        replace_item_in_object(object, string, newitem, true);
     }
     
     /* Create basic types: */
@@ -2611,7 +2611,7 @@ namespace GameSparks
         child = item->child;
         while (child != NULL)
         {
-            newchild = cJSON_Duplicate(child, ((cJSON_bool)1)); /* Duplicate (with recurse) each item in the ->next chain */
+            newchild = cJSON_Duplicate(child, true); /* Duplicate (with recurse) each item in the ->next chain */
             if (!newchild)
             {
                 goto fail;
@@ -2742,7 +2742,7 @@ namespace GameSparks
     {
         if (item == NULL)
         {
-            return ((cJSON_bool)0);
+            return false;
         }
         
         return (item->type & 0xFF) == cJSON_Invalid;
@@ -2752,7 +2752,7 @@ namespace GameSparks
     {
         if (item == NULL)
         {
-            return ((cJSON_bool)0);
+            return false;
         }
         
         return (item->type & 0xFF) == cJSON_False;
@@ -2762,7 +2762,7 @@ namespace GameSparks
     {
         if (item == NULL)
         {
-            return ((cJSON_bool)0);
+            return false;
         }
         
         return (item->type & 0xff) == cJSON_True;
@@ -2773,7 +2773,7 @@ namespace GameSparks
     {
         if (item == NULL)
         {
-            return ((cJSON_bool)0);
+            return false;
         }
         
         return (item->type & (cJSON_True | cJSON_False)) != 0;
@@ -2782,7 +2782,7 @@ namespace GameSparks
     {
         if (item == NULL)
         {
-            return ((cJSON_bool)0);
+            return false;
         }
         
         return (item->type & 0xFF) == cJSON_NULL;
@@ -2792,7 +2792,7 @@ namespace GameSparks
     {
         if (item == NULL)
         {
-            return ((cJSON_bool)0);
+            return false;
         }
         
         return (item->type & 0xFF) == cJSON_Number;
@@ -2802,7 +2802,7 @@ namespace GameSparks
     {
         if (item == NULL)
         {
-            return ((cJSON_bool)0);
+            return false;
         }
         
         return (item->type & 0xFF) == cJSON_String;
@@ -2812,7 +2812,7 @@ namespace GameSparks
     {
         if (item == NULL)
         {
-            return ((cJSON_bool)0);
+            return false;
         }
         
         return (item->type & 0xFF) == cJSON_Array;
@@ -2822,7 +2822,7 @@ namespace GameSparks
     {
         if (item == NULL)
         {
-            return ((cJSON_bool)0);
+            return false;
         }
         
         return (item->type & 0xFF) == cJSON_Object;
@@ -2832,7 +2832,7 @@ namespace GameSparks
     {
         if (item == NULL)
         {
-            return ((cJSON_bool)0);
+            return false;
         }
         
         return (item->type & 0xFF) == cJSON_Raw;
@@ -2842,7 +2842,7 @@ namespace GameSparks
     {
         if ((a == NULL) || (b == NULL) || ((a->type & 0xFF) != (b->type & 0xFF)) || cJSON_IsInvalid(a))
         {
-            return ((cJSON_bool)0);
+            return false;
         }
         
         /* check if type is valid */
@@ -2859,13 +2859,13 @@ namespace GameSparks
                 break;
                 
             default:
-                return ((cJSON_bool)0);
+                return false;
         }
         
         /* identical objects are equal */
         if (a == b)
         {
-            return ((cJSON_bool)1);
+            return true;
         }
         
         switch (a->type & 0xFF)
@@ -2874,27 +2874,27 @@ namespace GameSparks
             case cJSON_False:
             case cJSON_True:
             case cJSON_NULL:
-                return ((cJSON_bool)1);
+                return true;
                 
             case cJSON_Number:
                 if (a->valuedouble == b->valuedouble)
                 {
-                    return ((cJSON_bool)1);
+                    return true;
                 }
-                return ((cJSON_bool)0);
+                return false;
                 
             case cJSON_String:
             case cJSON_Raw:
                 if ((a->valuestring == NULL) || (b->valuestring == NULL))
                 {
-                    return ((cJSON_bool)0);
+                    return false;
                 }
                 if (strcmp(a->valuestring, b->valuestring) == 0)
                 {
-                    return ((cJSON_bool)1);
+                    return true;
                 }
                 
-                return ((cJSON_bool)0);
+                return false;
                 
             case cJSON_Array:
             {
@@ -2905,7 +2905,7 @@ namespace GameSparks
                 {
                     if (!cJSON_Compare(a_element, b_element, case_sensitive))
                     {
-                        return ((cJSON_bool)0);
+                        return false;
                     }
                     
                     a_element = a_element->next;
@@ -2914,10 +2914,10 @@ namespace GameSparks
                 
                 /* one of the arrays is longer than the other */
                 if (a_element != b_element) {
-                    return ((cJSON_bool)0);
+                    return false;
                 }
                 
-                return ((cJSON_bool)1);
+                return true;
             }
                 
             case cJSON_Object:
@@ -2930,12 +2930,12 @@ namespace GameSparks
                     b_element = get_object_item(b, a_element->string, case_sensitive);
                     if (b_element == NULL)
                     {
-                        return ((cJSON_bool)0);
+                        return false;
                     }
                     
                     if (!cJSON_Compare(a_element, b_element, case_sensitive))
                     {
-                        return ((cJSON_bool)0);
+                        return false;
                     }
                 }
                 
@@ -2946,20 +2946,20 @@ namespace GameSparks
                     a_element = get_object_item(a, b_element->string, case_sensitive);
                     if (a_element == NULL)
                     {
-                        return ((cJSON_bool)0);
+                        return false;
                     }
                     
                     if (!cJSON_Compare(b_element, a_element, case_sensitive))
                     {
-                        return ((cJSON_bool)0);
+                        return false;
                     }
                 }
                 
-                return ((cJSON_bool)1);
+                return true;
             }
                 
             default:
-                return ((cJSON_bool)0);
+                return false;
         }
     }
     

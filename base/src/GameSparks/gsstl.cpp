@@ -605,7 +605,7 @@ namespace gsstl
 #if ((GS_TARGET_PLATFORM == GS_PLATFORM_IOS || GS_TARGET_PLATFORM == GS_PLATFORM_MAC) && defined(__UNREAL__))
         s.ltrim();
 #else
-        s.erase(s.begin(), gsstl::find_if(s.begin(), s.end(), [](int c) {return !std::isspace(c);}));
+        s.erase(s.begin(), gsstl::find_if(s.begin(), s.end(), gsstl::not1(gsstl::ptr_fun<int, int>(isspace))));
 #endif
         
         return s;
@@ -616,7 +616,7 @@ namespace gsstl
 #if ((GS_TARGET_PLATFORM == GS_PLATFORM_IOS || GS_TARGET_PLATFORM == GS_PLATFORM_MAC) && defined(__UNREAL__))
         s.rtrim();
 #else
-        s.erase(gsstl::find_if(s.rbegin(), s.rend(), [](int c) {return !std::isspace(c);}).base(), s.end());
+        s.erase(gsstl::find_if(s.rbegin(), s.rend(), gsstl::not1(gsstl::ptr_fun<int, int>(isspace))).base(), s.end());
 #endif
         
         return s;
