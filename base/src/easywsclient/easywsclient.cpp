@@ -213,12 +213,12 @@ namespace { // private module-only namespace
             socket->abort();
             delete socket;
 #else
+			socket->abort();
 			if (threading::thread_is_joinable(dns_thread))
 			{
-                socket->abort();
 				threading::thread_join(dns_thread);
-				delete socket;
 			}
+			delete socket;
 #endif
         }
 
