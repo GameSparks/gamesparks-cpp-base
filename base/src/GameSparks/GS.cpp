@@ -414,8 +414,7 @@ void GameSparks::Core::GS::ProcessSendQueue(Seconds deltaTimeInSeconds)
 			CancelRequest(request); // needs to be called, before it's popped from the queue
 			m_SendQueue.pop_front();
 		}
-
-		if (m_Connections.size() > 0 && m_Connections[0]->GetReady())
+		else if (m_Connections.size() > 0 && m_Connections[0]->GetReady())
 		{
 			m_Connections[0]->SendImmediate(request);
 			m_SendQueue.pop_front();
